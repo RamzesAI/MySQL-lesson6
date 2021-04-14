@@ -1,0 +1,55 @@
+USE vk;
+
+/*
+ * 1. Пусть задан некоторый пользователь.
+Найдите человека, который больше всех общался с нашим пользователем, иначе, кто написал пользователю наибольшее число сообщений.
+ */
+-- Делаю выборку для пользователя c id 11
+
+SELECT 
+	from_user_id AS user_who_sent, 
+	to_user_id AS user_who_recieved, 
+	count(id) AS count_of_messages 	
+FROM messages
+WHERE to_user_id = 11
+GROUP BY from_user_id 
+ORDER BY count_of_messages DESC; 
+
+-- По результату видно, что пользователь с id 8 отправлял больше всего сообщений
+
+
+/*
+ * 2. Подсчитать общее количество лайков на посты, которые получили пользователи младше 18 лет.
+ */
+
+SELECT 
+	count(post_id) AS count_of_likes 
+FROM posts_likes 
+WHERE like_type = 1 AND 
+	post_id IN (SELECT id FROM posts WHERE user_id IN (SELECT user_id FROM profiles WHERE YEAR(CURDATE()) - YEAR(birthday) < 18))
+	
+
+
+/*
+ * 3. Определить, кто больше поставил лайков (всего) - мужчины или женщины?
+ */ 
+-- Для того, чтобы посчитать лаки делаю два запроса
+-- Для мужчин с выводом всех пользователей, поставивиших лайки:
+
+SELECT 
+	count(post_id) AS count_of_likes, 
+	like_type, 
+	group_concat(user_id) AS men -- можно заменить просто на user_id, если не нужеа длинная строка
+FROM posts_likes 
+WHERE (user_id) IN (SELECT (user_id) FROM profiles WHERE gender = 'm') AND like_type = 1
+
+-- Для женщин с выводом всех пользователей, поставивиших лайки:
+
+SELECT 
+	count(post_id) AS count_of_likes, 
+	like_type, 
+	group_concat(user_id) AS women -- можно заменить просто на user_id, если не нужеа длинная строка
+FROM posts_likes 
+WHERE (user_id) IN (SELECT (user_id) FROM profiles WHERE gender = 'f') AND like_type = 1
+
+-- В соответствии с нашими данными, женщины оказались активнее ))
